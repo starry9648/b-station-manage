@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>注册 - b站社区</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --secondary: #8b5cf6;
+            --accent: #ec4899;
+            --dark: #1e293b;
+            --light: #f8fafc;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f8fafc, #f0f4ff);
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .decorative-elements {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .circle {
+            position: absolute;
+            background: rgba(99, 102, 241, 0.1);
+            border-radius: 50%;
+            animation: float 8s infinite;
+        }
+
+        .circle:nth-child(1) {
+            width: 150px;
+            height: 150px;
+            top: 15%;
+            left: 10%;
+        }
+
+        .circle:nth-child(2) {
+            width: 200px;
+            height: 200px;
+            bottom: 10%;
+            right: 10%;
+            animation-delay: -2s;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0) rotate(0deg);
+            }
+            50% {
+                transform: translateY(-20px) rotate(180deg);
+            }
+        }
+
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1), 0 0 15px rgba(99, 102, 241, 0.1);
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(45deg, #818cf8, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.05em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: var(--secondary);
+            font-size: 1rem;
+        }
+
+        .form-grid {
+            display: grid;
+            gap: 24px;
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        .input-group i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--accent);
+            pointer-events: none;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 16px 20px 16px 50px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .input-group input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+            outline: none;
+        }
+
+        button[type="submit"] {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(45deg, #818cf8, #ec4899);
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button[type="submit"]:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        button[type="submit"]:active {
+            transform: translateY(0);
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--secondary);
+            cursor: pointer;
+            z-index: 1;
+        }
+
+        .links {
+            text-align: center;
+            margin-top: 24px;
+        }
+
+        .links a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+            display: inline-block;
+            margin: 0 10px;
+        }
+
+        .links a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="decorative-elements">
+        <div class="circle"></div>
+        <div class="circle"></div>
+    </div>
+    <div class="container">
+        <div class="header">
+            <h1>欢迎加入社区</h1>
+            <p>创建您的专属账号，开始精彩旅程</p>
+        </div>
+        <form id="registerForm" action="{% url 'register' %}" method="post">
+            {% csrf_token %}
+            <div class="form-grid">
+                <div class="input-group">
+                    <i class="fa-solid fa-envelope"></i>
+                    <input
+                        type="email"
+                        name="email"
+                        placeholder="注册邮箱"
+                        required
+                        autocomplete="email"
+                    >
+                </div>
+                <div class="input-group">
+                    <i class="fa-solid fa-lock"></i>
+                    <input
+                        type="password"
+                        name="password"
+                        placeholder="密码（6-16位）"
+                        required
+                        autocomplete="new-password"
+                    >
+                    <span class="password-toggle" onclick="togglePasswordVisibility(this)">
+                        <i class="fa-solid fa-eye-slash"></i>
+                    </span>
+                </div>
+                <div class="input-group">
+                    <i class="fa-solid fa-user"></i>
+                    <input
+                        type="text"
+                        name="username"
+                        placeholder="用户名"
+                        required
+                        autocomplete="username"
+                    >
+                </div>
+                <div class="input-group">
+                    <i class="fa-solid fa-phone"></i>
+                    <input
+                        type="tel"
+                        name="phone"
+                        placeholder="手机号码"
+                        required
+                    >
+                </div>
+                <div class="input-group">
+                    <i class="fa-solid fa-flag"></i>
+                    <select name="country" required>
+                        <option value="" selected disabled>选择国家/地区</option>
+                        <option value="CN">中国</option>
+                        <option value="US">美国</option>
+                        <option value="JP">日本</option>
+                        <option value="KR">韩国</option>
+                        <option value="UK">英国</option>
+                        <option value="CA">加拿大</option>
+                        <option value="AU">澳大利亚</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <i class="fa-solid fa-calendar"></i>
+                    <input
+                        type="date"
+                        name="birthdate"
+                        required
+                        max="2024-12-31"
+                    >
+                </div>
+            </div>
+            <button type="submit">创建账号</button>
+            <div class="links">
+                <a href="{% url 'user_login' %}">已有账号？直接登录</a>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        function togglePasswordVisibility(button) {
+            const input = button.previousElementSibling.querySelector('input');
+            const icon = button.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            }
+        }
+
+        document.getElementById('registerForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            // 这里可以添加表单验证逻辑
+            alert('🎉 注册成功！请使用新账号登录');
+            window.location.href = '{% url 'user_login' %}';
+
+    </script>
+</body>
+</html>

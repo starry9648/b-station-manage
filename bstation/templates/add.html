@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新增视频</title>
+</head>
+<body>
+    <h1>新增视频</h1>
+    <form method="post">
+        {% csrf_token %}
+        <input type="text" name="bvid" placeholder="视频唯一标识" required>
+        <input type="text" name="title" placeholder="视频标题" required>
+        <input type="text" name="author_mid" placeholder="UP主MID" required>
+        <input type="datetime-local" name="pub_time" placeholder="发布时间" required>
+        <input type="number" name="duration" placeholder="视频时长(秒)" required>
+        <input type="number" name="category_id" placeholder="分区ID" required>
+        <input type="text" name="tags" placeholder="视频标签(JSON数组)" required>
+        <button type="submit">添加视频</button>
+    </form>
+</body>
+</html>

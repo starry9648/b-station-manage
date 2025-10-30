@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>编辑视频信息</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.92);
+            --primary-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            --shadow-primary: 0 12px 32px rgba(99, 102, 241, 0.15);
+        }
+
+        body {
+            background: linear-gradient(150deg, #f3f4ff 0%, #f8f9fa 100%);
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            min-height: 100vh;
+        }
+
+        .edit-container {
+            max-width: 800px;
+            margin: 4rem auto;
+            padding: 0 1.5rem;
+        }
+
+        .form-glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(24px);
+            border-radius: 1.25rem;
+            padding: 2.5rem;
+            box-shadow: var(--shadow-primary);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+        }
+
+        .form-control:focus {
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+            border-color: #a855f7;
+        }
+
+        .floating-label {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .floating-label input,
+        .floating-label textarea {
+            height: 56px;
+            padding-top: 1.8rem;
+            border-radius: 0.75rem;
+            transition: all 0.3s ease;
+        }
+
+        .floating-label label {
+            position: absolute;
+            top: 0.8rem;
+            left: 1rem;
+            color: #64748b;
+            transition: all 0.2s ease;
+            pointer-events: none;
+        }
+
+        .floating-label input:focus ~ label,
+        .floating-label input:not(:placeholder-shown) ~ label {
+            top: 0.4rem;
+            transform: scale(0.85);
+            color: #6366f1;
+        }
+
+        .btn-gradient {
+            background-image: var(--primary-gradient);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+<div class="edit-container">
+    <div class="form-glass-card">
+        <div class="d-flex justify-content-between align-items-center mb-5">
+            <h2 class="fw-bold text-primary mb-0">
+                <i class="bi bi-pencil-square me-2"></i>编辑视频信息
+            </h2>
+            <a href="layout.html" class="btn btn-light rounded-circle p-2">
+                <i class="bi bi-x-lg"></i>
+            </a>
+        </div>
+
+        <form id="editForm" onsubmit="handleSubmit(event)">
+            <div class="floating-label">
+                <input type="text" id="bvid" class="form-control"
+                      placeholder=" " required readonly>
+                <label for="bvid">BV号</label>
+            </div>
+
+            <div class="floating-label">
+                <input type="text" id="title" class="form-control"
+                      placeholder=" " required>
+                <label for="title">视频标题</label>
+            </div>
+
+            <div class="floating-label">
+                <input type="number" id="author_mid" class="form-control"
+                      placeholder=" " required>
+                <label for="author_mid">UP主MID</label>
+            </div>
+
+            <div class="floating-label">
+                <input type="text" id="play" class="form-control"
+                      placeholder=" " required>
+                <label for="play">播放量</label>
+            </div>
+
+            <div class="d-flex gap-3 mt-4">
+                <button type="submit" class="btn btn-gradient flex-grow-1 py-3">
+                    <i class="bi bi-save me-2"></i>保存更改
+                </button>
+                <button type="button" class="btn btn-outline-danger flex-grow-1 py-3"
+                      onclick="handleDelete()">
+                    <i class="bi bi-trash3 me-2"></i>删除视频
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    const urlParams = new URLSearchParams(window.location.search)
+    const bvid = urlParams.get('bvid')
+
+    // 数字格式化函数
+    function formatNumber(number) {
+        return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+    }
+
+    // 播放量输入格式化
+    document.getElementById('play').addEventListener('input', function(e) {
+        let value = e.target.value.replace(/,/g, '')
+        value = value.replace(/[^0-9]/g, '')
+        if (value === '') {
+            e.target.value = ''
+            return
+        }
+        e.target.value = formatNumber(value)
+    })
+
+    function loadVideoData() {
+        const video = localStorage.getItem(`video_${bvid}`)
+        if (video) {
+            const data = JSON.parse(video)
+            document.getElementById('bvid').value = data.bvid
+            document.getElementById('title').value = data.title
+            document.getElementById('author_mid').value = data.author_mid
+            document.getElementById('play').value = formatNumber(data.play_count || 0)
+        }
+    }
+
+    function handleSubmit(e) {
+        e.preventDefault()
+
+        const formData = {
+            bvid: document.getElementById('bvid').value,
+            title: document.getElementById('title').value,
+            author_mid: document.getElementById('author_mid').value,
+            play_count: document.getElementById('play').value.replace(/,/g, ''),
+            pub_time: new Date().toISOString()
+        }
+
+        localStorage.setItem(`video_${bvid}`, JSON.stringify(formData))
+        alert('修改已保存')
+        window.location.href = 'layout.html'
+    }
+
+    function handleDelete() {
+        if (confirm('确定要删除这个视频吗？')) {
+            localStorage.removeItem(`video_${bvid}`)
+            window.location.href = 'layout.html'
+        }
+    }
+
+    // 初始化加载数据
+    loadVideoData()
+</script>
+</body>
+</html>

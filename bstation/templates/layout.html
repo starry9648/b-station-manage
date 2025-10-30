@@ -1,0 +1,1283 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>视频数据管理平台</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.9);
+            --shadow-color: rgba(0, 0, 0, 0.05);
+            --primary-color: #6366f1;
+            --secondary-color: #a855f7;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            min-height: 100vh;
+            font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+            display: flex;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: linear-gradient(135deg, #343a40, #212529);
+            color: white;
+            height: calc(100vh - 56px);
+            position: fixed;
+            left: 0;
+            top: 56px;
+            padding: 1rem 0;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar-header {
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-header img {
+            width: 40px;
+            height: 40px;
+            margin-right: 1rem;
+        }
+
+        .sidebar-menu {
+            padding: 1rem 0;
+        }
+
+        .menu-item {
+            padding: 0.75rem 1.5rem;
+            display: flex;
+            align-items: center;
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .menu-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .menu-item.active {
+            background-color: rgba(255, 255, 255, 0.15);
+            color: white;
+            border-left: 3px solid var(--primary-color);
+        }
+
+        .menu-item i {
+            margin-right: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 250px;
+            padding: 2rem;
+            padding-top: 56px;
+        }
+
+        .welcome-section {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .welcome-section h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+        }
+
+        .welcome-section p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .dashboard-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .dashboard-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            box-shadow: 0 8px 32px var(--shadow-color);
+            padding: 1.5rem;
+            transition: transform 0.3s ease;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .dashboard-card h5 {
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+        }
+
+        .dashboard-card .card-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .dashboard-card .card-label {
+            color: #777;
+            font-size: 0.9rem;
+        }
+
+        .dashboard-card i {
+            font-size: 2rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            box-shadow: 0 8px 32px var(--shadow-color);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: transform 0.3s ease;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .table-hover tbody tr {
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .table-hover tbody tr:hover {
+            transform: translateX(4px);
+            box-shadow: 0 2px 8px var(--shadow-color);
+        }
+
+        .btn-gradient {
+            background-image: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            border: none;
+            color: white !important;
+            transition: all 0.3s ease;
+        }
+
+        .btn-gradient:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        .chart-container {
+            height: 100%;
+            width: 100%;
+        }
+
+        .content-section {
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        .top-nav {
+            background: linear-gradient(135deg, #343a40, #212529);
+            color: white;
+            padding: 0.5rem 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            height: 56px;
+        }
+
+        .top-nav .logo {
+            display: flex;
+            align-items: center;
+        }
+
+        .top-nav .logo img {
+            width: 30px;
+            height: 30px;
+            margin-right: 0.5rem;
+        }
+
+        .top-nav .user-menu {
+            display: flex;
+            align-items: center;
+        }
+
+        .top-nav .user-menu .user-info {
+            margin-right: 1rem;
+        }
+
+        .top-nav .user-menu .user-dropdown {
+            position: relative;
+        }
+
+        .user-dropdown .dropdown-toggle {
+            padding: 0.375rem 0.75rem;
+            border: none;
+            background: transparent;
+            color: white;
+            cursor: pointer;
+        }
+
+        .user-dropdown .dropdown-menu {
+            background-color: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+            right: 0;
+            left: auto;
+        }
+
+        .user-dropdown .dropdown-item {
+            color: #212529;
+        }
+
+        .user-dropdown .dropdown-item:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        .filter-container {
+            margin-bottom: 1.5rem;
+        }
+
+        .pagination {
+            margin-top: 1.5rem;
+        }
+
+        /* 图表自适应样式 */
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 70px;
+                padding: 0.5rem 0;
+            }
+
+            .sidebar-header h4, .menu-item span {
+                display: none;
+            }
+
+            .menu-item {
+                justify-content: center;
+                padding: 1rem;
+            }
+
+            .menu-item i {
+                margin-right: 0;
+                font-size: 1.5rem;
+            }
+
+            .main-content {
+                margin-left: 70px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-cards {
+                grid-template-columns: 1fr;
+            }
+
+            .chart-container {
+                height: calc(100vh - 250px);
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- 顶部导航条 -->
+<div class="top-nav">
+    <div class="logo">
+        <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0id2hpdGUiIGQ9Ik0xMiwyQTEwLDEwIDAgMCwxIDIyLDEyQTEwLDEwIDAgMCwxIDEyLDIyQTEwLDEwIDAgMCwxIDIsMTJBMTAsMTAgMCAwLDEgMTIsMk0xMiw0QTgsOCAwIDAsMCA0LDEyQTgsOCAwIDAsMCAxMiwyMEE4LDggMCAwLDAgMjAsMTJBNiw2IDAgMCwwIDEyLDRNMTIsNkE2LDYgMCAwLDEgMTgsMTJBNiw2IDAgMCwxIDEyLDE4QTYsNiAwIDAsMSA2LDEyQTYsNiAwIDAsMSAxMiw2TTEyLDEwQTQsNCAwIDAsMCA4LDEyQTQsNCAwIDAsMCAxMiwxNkE0LDQgMCAwLDAgMTYsMTJBNiw0IDAgMCwwIDEyLDEwWiIgLz48L3N2Zz4=" alt="Logo">
+        <span>视频数据管理系统</span>
+    </div>
+    <div class="user-menu">
+        <div class="user-info">
+            <span>欢迎，{{ user.username }}</span>
+        </div>
+        <div class="user-dropdown">
+            <button class="dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                <i class="bi bi-person-circle"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="{% url 'user_detail' user.id %}">个人资料</a></li>
+                <li><a class="dropdown-item" href="{% url 'admin_page' %}">管理用户</a></li>
+                <li>
+                    <hr class="dropdown-divider">
+                </li>
+                <li><a class="dropdown-item" href="{% url 'logout' %}">退出登录</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="sidebar">
+    <div class="sidebar-header">
+        <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0id2hpdGUiIGQ9Ik0xMiwyQTEwLDEwIDAgMCwxIDIyLDEyQTEwLDEwIDAgMCwxIDEyLDIyQTEwLDEwIDAgMCwxIDIsMTJBMTAsMTAgMCAwLDEgMTIsMk0xMiw0QTgsOCAwIDAsMCA0LDEyQTgsOCAwIDAsMCAxMiwyMEE4LDggMCAwLDAgMjAsMTJBNiw2IDAgMCwwIDEyLDRNMTIsNkE2LDYgMCAwLDEgMTgsMTJBNiw2IDAgMCwxIDEyLDE4QTYsNiAwIDAsMSA2LDEyQTYsNiAwIDAsMSAxMiw2TTEyLDEwQTQsNCAwIDAsMCA4LDEyQTQsNCAwIDAsMCAxMiwxNkE0LDQgMCAwLDAgMTYsMTJBNiw0IDAgMCwwIDEyLDEwWiIgLz48L3N2Zz4=" alt="Logo">
+        <h4>视频数据管理系统</h4>
+    </div>
+    <div class="sidebar-menu">
+        <a href="#" class="menu-item active" data-section="home">
+            <i class="bi bi-house-door"></i>
+            <span>首页</span>
+        </a>
+        <a href="#" class="menu-item" data-section="video-center">
+            <i class="bi bi-film"></i>
+            <span>视频管理中心</span>
+        </a>
+        <a href="#" class="menu-item" data-section="analytics">
+            <i class="bi bi-bar-chart-line"></i>
+            <span>播放量数据分析</span>
+        </a>
+    </div>
+</div>
+
+<div class="main-content">
+    <!-- 首页内容 -->
+    <div id="home" class="content-section active">
+        <div class="welcome-section">
+            <h1><i class="bi bi-collection-play-fill me-2"></i>欢迎来到视频数据管理平台</h1>
+            <p>这里是您管理视频数据的中心，可以轻松添加、编辑和分析视频信息。</p>
+        </div>
+
+        <div class="dashboard-cards">
+            <div class="dashboard-card">
+                <i class="bi bi-film"></i>
+                <h5>视频总数</h5>
+                <div class="card-value" id="total-videos">0</div>
+                <div class="card-label">当前平台视频总数</div>
+            </div>
+
+            <div class="dashboard-card">
+                <i class="bi bi-plus-circle"></i>
+                <h5>今日新增</h5>
+                <div class="card-value" id="today-added">0</div>
+                <div class="card-label">今天新增视频数量</div>
+            </div>
+
+            <div class="dashboard-card">
+                <i class="bi bi-eye"></i>
+                <h5>总播放量</h5>
+                <div class="card-value" id="total-plays">0</div>
+                <div class="card-label">所有视频总播放量</div>
+            </div>
+
+            <div class="dashboard-card">
+                <i class="bi bi-graph-up"></i>
+                <h5>平均播放量</h5>
+                <div class="card-value" id="avg-plays">0</div>
+                <div class="card-label">每视频平均播放量</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 视频管理中心内容 -->
+    <div id="video-center" class="content-section">
+        <div class="row g-4">
+            <div class="col-12">
+                <div class="glass-card p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="mb-0 fw-semibold">
+                            <i class="bi bi-film me-2"></i>视频数据列表
+                        </h4>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-gradient" data-bs-toggle="modal" data-bs-target="#videoModal">
+                                <i class="bi bi-plus-lg me-2"></i>新增视频
+                            </button>
+                            <div class="dropdown">
+                                <button class="btn btn-outline-primary dropdown-toggle" type="button"
+                                        data-bs-toggle="dropdown">
+                                    <i class="bi bi-download me-2"></i>导出
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="#" onclick="exportData('csv')">CSV格式</a></li>
+                                    <li><a class="dropdown-item" href="#" onclick="exportData('json')">JSON格式</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="filter-container mb-3" id="filterContainer">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <input type="text" class="form-control" placeholder="搜索BV号" id="filterBvid"
+                                       oninput="handleFilterChange()">
+                            </div>
+                            <div class="col-md-4">
+                                <input type="text" class="form-control" placeholder="搜索标题" id="filterTitle"
+                                       oninput="handleFilterChange()">
+                            </div>
+                            <div class="col-md-4">
+                                <input type="number" class="form-control" placeholder="搜索UP主MID" id="filterMid"
+                                       oninput="handleFilterChange()">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive rounded-4">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                            <tr>
+                                <th class="py-3 ps-4 sortable-header" onclick="sortTable('bvid')">
+                                    BV号 <i class="bi bi-arrow-down-up"></i>
+                                </th>
+                                <th class="py-3 sortable-header" onclick="sortTable('title')">
+                                    标题 <i class="bi bi-arrow-down-up"></i>
+                                </th>
+                                <th class="py-3 sortable-header" onclick="sortTable('author_mid')">
+                                    UP主MID <i class="bi bi-arrow-down-up"></i>
+                                </th>
+                                <th class="py-3 sortable-header" onclick="sortTable('pub_time')">
+                                    发布时间 <i class="bi bi-arrow-down-up"></i>
+                                </th>
+                                <th class="py-3 sortable-header" onclick="sortTable('duration')">
+                                    视频时长(秒) <i class="bi bi-arrow-down-up"></i>
+                                </th>
+                                <th class="py-3 sortable-header" onclick="sortTable('play_count')">
+                                    播放量 <i class="bi bi-arrow-down-up"></i>
+                                </th>
+                                <th class="py-3 text-end pe-4">操作</th>
+                            </tr>
+                            </thead>
+                            <tbody id="videoTable" class="border-top-0"></tbody>
+                        </table>
+                    </div>
+
+                    <nav class="mt-4">
+                        <ul class="pagination justify-content-center justify-content-md-end" id="pagination"></ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 播放量数据分析内容 -->
+    <div id="analytics" class="content-section">
+        <div class="row g-4 mt-4">
+            <div class="col-12">
+                <div class="glass-card p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="mb-0 fw-semibold">
+                            <i class="bi bi-bar-chart-line me-2"></i>播放量数据分析
+                        </h4>
+                        <div class="dropdown">
+                            <button class="btn btn-outline-primary dropdown-toggle" type="button"
+                                    data-bs-toggle="dropdown">
+                                选择图表类型
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#" onclick="changeChartType('line')">折线图</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="changeChartType('bar')">柱状图</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="changeChartType('pie')">饼图</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="changeChartType('scatter')">散点图</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="chart-container" id="chartContainer"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 视频新增和编辑的模态框 -->
+<div class="modal fade" id="videoModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">新增视频数据</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="videoForm" onsubmit="return handleSubmit(event)">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">BV号</label>
+                        <input type="text" class="form-control" name="bvid" required pattern="BV\w+">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">视频标题</label>
+                        <input type="text" class="form-control" name="title" required maxlength="50">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">UP主MID</label>
+                        <input type="number" class="form-control" name="author_mid" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">发布时间</label>
+                        <input type="datetime-local" class="form-control" name="pub_time" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">播放量</label>
+                        <input type="number" class="form-control" name="play_count" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">视频时长(秒)</label>
+                        <input type="number" class="form-control" name="duration" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-gradient">保存数据</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editVideoModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">编辑视频信息</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="editForm" onsubmit="return handleEditSubmit(event)">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <input type="hidden" id="editBvid" name="bvid">
+                    <div class="mb-3">
+                        <label class="form-label">视频标题</label>
+                        <input type="text" id="editTitle" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">UP主MID</label>
+                        <input type="number" id="editAuthorMid" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">发布时间</label>
+                        <input type="datetime-local" id="editPubTime" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">播放量</label>
+                        <input type="number" id="editPlayCount" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">视频时长(秒)</label>
+                        <input type="number" id="editDuration" class="form-control" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-gradient">保存更改</button>
+                    <button type="button" class="btn btn-outline-danger"
+                            onclick="deleteVideo(document.getElementById('editBvid').value)">
+                        <i class="bi bi-trash"></i> 删除视频
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.2/dist/echarts.min.js"></script>
+<script>
+    // 页面加载完成后初始化
+    document.addEventListener('DOMContentLoaded', function () {
+        // 初始化菜单切换
+        const menuItems = document.querySelectorAll('.menu-item');
+        menuItems.forEach(item => {
+            item.addEventListener('click', function (e) {
+                e.preventDefault();
+
+                // 移除所有菜单项的active类
+                menuItems.forEach(mi => mi.classList.remove('active'));
+
+                // 为当前点击的菜单项添加active类
+                this.classList.add('active');
+
+                // 获取要显示的内容区域ID
+                const sectionId = this.getAttribute('data-section');
+
+                // 隐藏所有内容区域
+                const contentSections = document.querySelectorAll('.content-section');
+                contentSections.forEach(section => {
+                    section.classList.remove('active');
+                });
+
+                // 显示对应的内容区域
+                const targetSection = document.getElementById(sectionId);
+                if (targetSection) {
+                    targetSection.classList.add('active');
+                }
+            });
+        });
+
+        // 初始化图表
+        initChart();
+
+        // 获取视频数据
+        fetchVideos();
+    });
+
+    function fetchVideos() {
+        showLoading();
+        fetch('/get_videos/')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (!data || !data.data) {
+                    throw new Error('Invalid data format received from server');
+                }
+                appState.cachedVideos = data.data;
+                renderTable();
+                initChart();
+                hideLoading();
+                updateDashboardStats();
+            })
+            .catch(error => {
+                console.error('Error fetching videos:', error);
+                hideLoading();
+                alert('获取视频数据失败，请检查网络连接或稍后再试。');
+            });
+    }
+
+    function updateDashboardStats() {
+        if (!appState.cachedVideos) return;
+
+        document.getElementById('total-videos').textContent = appState.cachedVideos.length;
+
+        // 计算总播放量
+        const totalPlays = appState.cachedVideos.reduce((sum, video) => sum + video.play_count, 0);
+        document.getElementById('total-plays').textContent = totalPlays.toLocaleString();
+
+        // 计算平均播放量
+        const avgPlays = appState.cachedVideos.length > 0 ? (totalPlays / appState.cachedVideos.length).toFixed(0) : 0;
+        document.getElementById('avg-plays').textContent = avgPlays.toLocaleString();
+
+        // 计算今天新增视频数量
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const todayAdded = appState.cachedVideos.filter(video => {
+            const pubDate = new Date(video.pub_time);
+            pubDate.setHours(0, 0, 0, 0);
+            return pubDate.getTime() === today.getTime();
+        }).length;
+
+        document.getElementById('today-added').textContent = todayAdded;
+    }
+
+    const CONFIG = {
+        ITEMS_PER_PAGE: 10,
+        STORAGE_KEY: 'video_data_v2',
+        DEFAULT_SORT: {key: 'pub_time', order: 'desc'}
+    };
+
+    let appState = {
+        currentPage: 1,
+        sortKey: CONFIG.DEFAULT_SORT.key,
+        sortOrder: CONFIG.DEFAULT_SORT.order,
+        cachedVideos: [],
+        chartInstance: null
+    };
+
+    function renderTable() {
+        const start = (appState.currentPage - 1) * CONFIG.ITEMS_PER_PAGE;
+        const end = start + CONFIG.ITEMS_PER_PAGE;
+        const filteredData = getFilteredData();
+        const sortedData = getSortedData(filteredData);
+        const pageData = sortedData.slice(start, end);
+
+        document.getElementById('videoTable').innerHTML = pageData.map(video => `
+                <tr>
+                    <td class="ps-4">${video.bvid}</td>
+                    <td>${video.title}</td>
+                    <td>${video.author_mid}</td>
+                    <td>${new Date(video.pub_time).toLocaleString()}</td>
+                    <td>${video.duration}</td>
+                    <td>${video.play_count.toLocaleString()}</td>
+                    <td class="text-end pe-4">
+                        <button class="btn btn-sm btn-outline-primary me-2" onclick="openEditModal('${video.bvid}')">
+                            <i class="bi bi-pencil-square"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteVideo('${video.bvid}')">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+
+        updatePagination(filteredData.length);
+    }
+
+    function updatePagination(totalItems) {
+        const totalPages = Math.ceil(totalItems / CONFIG.ITEMS_PER_PAGE);
+        const pagination = document.getElementById('pagination');
+
+        let html = '';
+        for (let i = 1; i <= totalPages; i++) {
+            html += `
+                    <li class="page-item ${i === appState.currentPage ? 'active' : ''}">
+                        <a class="page-link" href="#" onclick="changePage(${i})">${i}</a>
+                    </li>
+                `;
+        }
+        pagination.innerHTML = html;
+    }
+
+    function changePage(page) {
+        appState.currentPage = page;
+        renderTable();
+        window.scrollTo(0, 0);
+    }
+
+    function sortTable(key) {
+        if (appState.sortKey === key) {
+            appState.sortOrder = appState.sortOrder === 'asc' ? 'desc' : 'asc';
+        } else {
+            appState.sortKey = key;
+            appState.sortOrder = 'asc';
+        }
+        renderTable();
+    }
+
+    function getFilteredData() {
+        const bvidFilter = document.getElementById('filterBvid').value.toLowerCase();
+        const titleFilter = document.getElementById('filterTitle').value.toLowerCase();
+        const midFilter = document.getElementById('filterMid').value;
+
+        return appState.cachedVideos.filter(video => {
+            return video.bvid.toLowerCase().includes(bvidFilter) &&
+                video.title.toLowerCase().includes(titleFilter) &&
+                (midFilter === '' || video.author_mid.toString() === midFilter);
+        });
+    }
+
+    function getSortedData(data) {
+        return [...data].sort((a, b) => {
+            const modifier = appState.sortOrder === 'asc' ? 1 : -1;
+            if (a[appState.sortKey] < b[appState.sortKey]) return -1 * modifier;
+            if (a[appState.sortKey] > b[appState.sortKey]) return 1 * modifier;
+            return 0;
+        });
+    }
+
+    function openEditModal(bvid) {
+        const video = appState.cachedVideos.find(v => v.bvid === bvid);
+        if (video) {
+            document.getElementById('editBvid').value = video.bvid;
+            document.getElementById('editTitle').value = video.title;
+            document.getElementById('editAuthorMid').value = video.author_mid;
+            document.getElementById('editPubTime').value = video.pub_time;
+            document.getElementById('editDuration').value = video.duration;
+            document.getElementById('editPlayCount').value = video.play_count;
+            const modal = new bootstrap.Modal(document.getElementById('editVideoModal'));
+            modal.show();
+        }
+    }
+
+    function handleSubmit(event) {
+        event.preventDefault();
+        const formData = new FormData(event.target);
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        fetch('/add_video/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(Object.fromEntries(formData)),
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    fetchVideos();
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('videoModal'));
+                    if (modal) {
+                        modal.hide();
+                    }
+                    event.target.reset();
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('提交失败，请检查网络连接或稍后再试。');
+            });
+
+        return false;
+    }
+
+    function handleEditSubmit(event) {
+        event.preventDefault();
+        const formData = {
+            bvid: document.getElementById('editBvid').value,
+            title: document.getElementById('editTitle').value,
+            author_mid: document.getElementById('editAuthorMid').value,
+            pub_time: document.getElementById('editPubTime').value,
+            duration: document.getElementById('editDuration').value,
+            play_count: document.getElementById('editPlayCount').value,
+        };
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        fetch('/edit_video/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData),
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    fetchVideos();
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('editVideoModal'));
+                    if (modal) {
+                        modal.hide();
+                    }
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('提交失败，请检查网络连接或稍后再试。');
+            });
+
+        return false;
+    }
+
+    function deleteVideo(bvid) {
+        if (confirm('确定要删除该视频吗？')) {
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            fetch('/delete_video/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({bvid: bvid}),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        fetchVideos();
+                    } else {
+                        alert(data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('删除失败，请检查网络连接或稍后再试。');
+                });
+        }
+    }
+
+    function handleFilterChange() {
+        appState.currentPage = 1;
+        renderTable();
+    }
+
+    function exportData(format) {
+        const filteredData = getFilteredData();
+        const sortedData = getSortedData(filteredData);
+
+        if (format === 'csv') {
+            const csvContent = convertToCSV(sortedData);
+            downloadFile('videos.csv', csvContent);
+        } else if (format === 'json') {
+            const jsonContent = JSON.stringify(sortedData, null, 2);
+            downloadFile('videos.json', jsonContent);
+        }
+    }
+
+    function convertToCSV(data) {
+        const headers = ['BV号', '标题', 'UP主MID', '发布时间', '视频时长(秒)', '播放量'];
+        const keys = ['bvid', 'title', 'author_mid', 'pub_time', 'duration', 'play_count'];
+
+        let csv = headers.join(',') + '\n';
+
+        data.forEach(item => {
+            const row = keys.map(key => {
+                if (key === 'pub_time') {
+                    return new Date(item[key]).toLocaleString();
+                }
+                return item[key];
+            });
+            csv += row.join(',') + '\n';
+        });
+
+        return csv;
+    }
+
+    function downloadFile(filename, content) {
+        const blob = new Blob([content], {type: 'text/plain'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    // 图表功能
+    function initChart() {
+        const chartDom = document.getElementById('chartContainer');
+        if (!chartDom) return;
+
+        // 设置图表容器高度为页面剩余高度
+        chartDom.style.height = 'calc(100vh - 150px)';
+
+        const myChart = echarts.init(chartDom);
+        appState.chartInstance = myChart;
+
+        // 设置图表选项
+        const option = {
+            title: {
+                text: '视频播放量分析',
+                left: 'center',
+                textStyle: {
+                    fontSize: 20,
+                    fontWeight: 'bold',
+                    color: '#333'
+                }
+            },
+            tooltip: {
+                trigger: 'axis'
+            },
+            grid: {
+                left: '5%',
+                right: '5%',
+                bottom: '10%',
+                containLabel: true
+            },
+            xAxis: {
+                type: 'category',
+                data: appState.cachedVideos.map(video => video.title),
+                axisLabel: {
+                    rotate: 45,
+                    fontSize: 12
+                }
+            },
+            yAxis: {
+                type: 'value',
+                axisLabel: {
+                    fontSize: 12
+                }
+            },
+            series: [{
+                name: '播放量',
+                type: 'line',
+                data: appState.cachedVideos.map(video => video.play_count),
+                lineStyle: {
+                    width: 2,
+                    color: '#6366f1'
+                },
+                itemStyle: {
+                    color: '#6366f1'
+                },
+                smooth: true,
+                symbolSize: 8
+            }]
+        };
+
+        myChart.setOption(option);
+        window.addEventListener('resize', () => {
+            myChart.resize();
+        });
+    }
+
+    function changeChartType(type) {
+        if (!appState.chartInstance) return;
+
+        let option;
+        const titles = appState.cachedVideos.map(video => video.title);
+        const playCounts = appState.cachedVideos.map(video => video.play_count);
+
+        switch (type) {
+            case 'line':
+                option = {
+                    title: {
+                        text: '视频播放量趋势',
+                        left: 'center',
+                        textStyle: {
+                            fontSize: 20,
+                            fontWeight: 'bold',
+                            color: '#333'
+                        }
+                    },
+                    tooltip: {
+                        trigger: 'axis'
+                    },
+                    grid: {
+                        left: '5%',
+                        right: '5%',
+                        bottom: '10%',
+                        containLabel: true
+                    },
+                    xAxis: {
+                        type: 'category',
+                        data: titles,
+                        axisLabel: {
+                            rotate: 45,
+                            fontSize: 12
+                        }
+                    },
+                    yAxis: {
+                        type: 'value',
+                        axisLabel: {
+                            fontSize: 12
+                        }
+                    },
+                    series: [{
+                        name: '播放量',
+                        type: 'line',
+                        data: playCounts,
+                        lineStyle: {
+                            width: 2,
+                            color: '#6366f1'
+                        },
+                        itemStyle: {
+                            color: '#6366f1'
+                        },
+                        smooth: true,
+                        symbolSize: 8
+                    }]
+                };
+                break;
+            case 'bar':
+                option = {
+                    title: {
+                        text: '视频播放量柱状图',
+                        left: 'center',
+                        textStyle: {
+                            fontSize: 20,
+                            fontWeight: 'bold',
+                            color: '#333'
+                        }
+                    },
+                    tooltip: {
+                        trigger: 'axis'
+                    },
+                    grid: {
+                        left: '5%',
+                        right: '5%',
+                        bottom: '10%',
+                        containLabel: true
+                    },
+                    xAxis: {
+                        type: 'value'
+                    },
+                    yAxis: {
+                        type: 'category',
+                        data: titles,
+                        axisLabel: {
+                            fontSize: 12
+                        }
+                    },
+                    series: [{
+                        name: '播放量',
+                        type: 'bar',
+                        data: playCounts,
+                        itemStyle: {
+                            color: '#6366f1'
+                        }
+                    }]
+                };
+                break;
+            case 'pie':
+                option = {
+                    title: {
+                        text: '视频播放量分布',
+                        left: 'center',
+                        textStyle: {
+                            fontSize: 20,
+                            fontWeight: 'bold',
+                            color: '#333'
+                        }
+                    },
+                    tooltip: {
+                        trigger: 'item'
+                    },
+                    series: [{
+                        name: '播放量',
+                        type: 'pie',
+                        radius: '50%',
+                        data: titles.map((title, index) => ({
+                            name: title,
+                            value: playCounts[index]
+                        })),
+                        emphasis: {
+                            itemStyle: {
+                                shadowBlur: 10,
+                                shadowOffsetX: 0,
+                                shadowColor: 'rgba(0, 0, 0, 0.5)'
+                            }
+                        }
+                    }]
+                };
+                break;
+            case 'scatter':
+                option = {
+                    title: {
+                        text: '视频播放量散点图',
+                        left: 'center',
+                        textStyle: {
+                            fontSize: 20,
+                            fontWeight: 'bold',
+                            color: '#333'
+                        }
+                    },
+                    tooltip: {
+                        trigger: 'item',
+                        formatter: '{b}: {c} 次播放'
+                    },
+                    grid: {
+                        left: '5%',
+                        right: '5%',
+                        bottom: '10%',
+                        containLabel: true
+                    },
+                    xAxis: {
+                        type: 'value',
+                        name: '视频索引'
+                    },
+                    yAxis: {
+                        type: 'value',
+                        name: '播放量'
+                    },
+                    series: [{
+                        name: '播放量',
+                        type: 'scatter',
+                        data: appState.cachedVideos.map((video, index) => [index, video.play_count]),
+                        symbolSize: 10,
+                        itemStyle: {
+                            color: function (params) {
+                                const playCount = params.value[1];
+                                if (playCount > 10000) {
+                                    return '#ff4d4f';
+                                } else if (playCount > 5000) {
+                                    return '#faad14';
+                                } else {
+                                    return '#52c41a';
+                                }
+                            }
+                        }
+                    }]
+                };
+                break;
+            default:
+                option = {
+                    title: {
+                        text: '视频播放量分析',
+                        left: 'center',
+                        textStyle: {
+                            fontSize: 20,
+                            fontWeight: 'bold',
+                            color: '#333'
+                        }
+                    },
+                    tooltip: {
+                        trigger: 'axis'
+                    },
+                    grid: {
+                        left: '5%',
+                        right: '5%',
+                        bottom: '10%',
+                        containLabel: true
+                    },
+                    legend: {
+                        data: ['播放量']
+                    },
+                    xAxis: {
+                        type: 'category',
+                        data: titles,
+                        axisLabel: {
+                            rotate: 45,
+                            fontSize: 12
+                        }
+                    },
+                    yAxis: {
+                        type: 'value',
+                        axisLabel: {
+                            fontSize: 12
+                        }
+                    },
+                    series: [{
+                        name: '播放量',
+                        type: 'line',
+                        data: playCounts,
+                        lineStyle: {
+                            width: 2,
+                            color: '#6366f1'
+                        },
+                        itemStyle: {
+                            color: '#6366f1'
+                        },
+                        smooth: true,
+                        symbolSize: 8
+                    }]
+                };
+        }
+
+        appState.chartInstance.setOption(option);
+    }
+
+    function showLoading() {
+        const loadingOverlay = document.createElement('div');
+        loadingOverlay.style.position = 'fixed';
+        loadingOverlay.style.top = '0';
+        loadingOverlay.style.left = '0';
+        loadingOverlay.style.width = '100%';
+        loadingOverlay.style.height = '100%';
+        loadingOverlay.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
+        loadingOverlay.style.display = 'flex';
+        loadingOverlay.style.justifyContent = 'center';
+        loadingOverlay.style.alignItems = 'center';
+        loadingOverlay.style.zIndex = '9999';
+
+        const spinner = document.createElement('div');
+        spinner.style.width = '3rem';
+        spinner.style.height = '3rem';
+        spinner.style.border = '0.25em solid currentColor';
+        spinner.style.borderRightColor = 'transparent';
+        spinner.style.borderRadius = '50%';
+        spinner.style.animation = 'spin 0.75s linear infinite';
+        spinner.style.color = '#6366f1';
+
+        const keyframes = document.createElement('style');
+        keyframes.innerHTML = `
+                @keyframes spin {
+                    to { transform: rotate(360deg); }
+                }
+            `;
+
+        document.head.appendChild(keyframes);
+        loadingOverlay.appendChild(spinner);
+        document.body.appendChild(loadingOverlay);
+    }
+
+    function hideLoading() {
+        const loadingOverlay = document.querySelector('div[style*="position: fixed; top: 0px; left: 0px; width: 100%; height: 100%; background-color: rgba(255, 255, 255, 0.8);"]');
+        if (loadingOverlay) {
+            document.body.removeChild(loadingOverlay);
+        }
+    }
+</script>
+</body>
+</html>

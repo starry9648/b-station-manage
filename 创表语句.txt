@@ -1,0 +1,147 @@
+CREATE TABLE users (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY COMMENT '用户唯一标识',
+    username VARCHAR(50) NOT NULL UNIQUE COMMENT '用户名（唯一）',
+    password_hash VARCHAR(255) NOT NULL COMMENT '加密后的密码',
+    registration_ip VARCHAR(45) COMMENT '注册IP地址',
+    last_login DATETIME COMMENT '最后登录时间',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '注册时间',
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后更新时间',
+    
+    -- 安全相关字段
+    is_locked TINYINT(1) DEFAULT 0 COMMENT '账户是否锁定',
+    failed_attempts TINYINT UNSIGNED DEFAULT 0 COMMENT '连续登录失败次数',
+    
+    -- 索引优化
+    INDEX idx_username (username),
+    INDEX idx_created (created_at)
+) ENGINE=InnoDB 
+DEFAULT CHARSET=utf8mb4 
+COLLATE=utf8mb4_unicode_ci
+COMMENT='用户账户信息表';
+
+CREATE TABLE edit (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    bvid VARCHAR(20) NOT NULL UNIQUE,
+    title VARCHAR(255) NOT NULL,
+    author_mid INT NOT NULL,
+    play INT DEFAULT 0,
+    pub_time DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+
+CREATE TABLE videos (
+    bvid VARCHAR(12) PRIMARY KEY COMMENT '视频唯一标识(BV号)',
+    title VARCHAR(255) NOT NULL COMMENT '视频标题',
+    author_mid BIGINT UNSIGNED NOT NULL COMMENT 'UP主MID',
+    play_count INT UNSIGNED DEFAULT 0 NOT NULL COMMENT '播放次数',
+    pub_time DATETIME COMMENT '发布时间',
+    duration INT UNSIGNED COMMENT '视频时长(秒)',
+    category_id INT UNSIGNED COMMENT '分区ID',
+    tags VARCHAR(255) COMMENT '视频标签(逗号分隔)',
+    
+    -- 索引优化
+    INDEX idx_author (author_mid),
+    INDEX idx_category (category_id),
+    INDEX idx_pubtime (pub_time),
+    
+    -- 外键约束（需存在分类表）
+    -- FOREIGN KEY (category_id) REFERENCES video_categories(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='视频信息表';
+
+-- 视频核心信息表
+CREATE TABLE video_basic (
+    bvid VARCHAR(12) PRIMARY KEY COMMENT '视频唯一标识',
+    title VARCHAR(200) NOT NULL COMMENT '视频标题',
+    author_mid VARCHAR(20) NOT NULL COMMENT 'UP主MID',
+    pub_time DATETIME NOT NULL COMMENT '发布时间',
+    duration INT UNSIGNED COMMENT '视频时长(秒)',
+    category_id SMALLINT COMMENT '分区ID',
+    tags JSON COMMENT '视频标签(JSON数组)',
+    description TEXT COMMENT '视频简介',
+    keywords JSON COMMENT '标题关键词分析结果'
+);
+
+-- 视频动态指标表
+CREATE TABLE video_stats (
+    stat_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    bvid VARCHAR(12) NOT NULL,
+    collect_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+    view_count INT UNSIGNED DEFAULT 0 COMMENT '播放量',
+    danmaku_count INT UNSIGNED DEFAULT 0 COMMENT '弹幕数',
+    reply_count INT UNSIGNED DEFAULT 0 COMMENT '评论数',
+    favorite_count INT UNSIGNED DEFAULT 0 COMMENT '收藏量',
+    coin_count INT UNSIGNED DEFAULT 0 COMMENT '投币数',
+    like_count INT UNSIGNED DEFAULT 0 COMMENT '点赞数',
+    INDEX idx_collect_time (collect_time)
+);
+
+-- UP主分析表
+CREATE TABLE up_creator (
+    author_mid VARCHAR(20) PRIMARY KEY,
+    name VARCHAR(50) NOT NULL,
+    level TINYINT UNSIGNED COMMENT '等级',
+    fans_count INT UNSIGNED DEFAULT 0,
+    total_views BIGINT UNSIGNED DEFAULT 0,
+    avg_like_rate FLOAT COMMENT '平均点赞率',
+    update_time DATETIME COMMENT '最后数据更新时间'
+);
+
+-- 用户行为日志表
+CREATE TABLE user_behavior (
+    log_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_mid VARCHAR(20) NOT NULL,
+    bvid VARCHAR(12) NOT NULL,
+    action_type ENUM('view','like','coin','collect','share','search') NOT NULL,
+    action_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+    duration INT COMMENT '观看时长(秒)',
+    search_keyword VARCHAR(50) COMMENT '搜索关键词',
+    device_info VARCHAR(50) COMMENT '设备信息'
+);
+
+-- 弹幕分析表
+CREATE TABLE danmaku_data (
+    danmaku_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    bvid VARCHAR(12) NOT NULL,
+    content VARCHAR(150) NOT NULL,
+    send_time DECIMAL(6,2) COMMENT '发送时间(秒)',
+    sentiment TINYINT COMMENT '情感倾向(-1/0/1)',
+    cluster_id INT COMMENT '文本聚类分组'
+);
+
+-- 评论分析表
+CREATE TABLE video_comment (
+    rpid BIGINT PRIMARY KEY,
+    bvid VARCHAR(12) NOT NULL,
+    user_mid VARCHAR(20),
+    content TEXT NOT NULL,
+    like_num INT UNSIGNED DEFAULT 0,
+    sentiment_score FLOAT COMMENT '情感分析得分',
+    topic_class VARCHAR(20) COMMENT '话题分类'
+);
+
+-- 推荐日志表
+CREATE TABLE recommend_log (
+    rec_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_mid VARCHAR(20) NOT NULL,
+    recommend_type VARCHAR(20) COMMENT '推荐类型',
+    video_list JSON COMMENT '推荐视频列表',
+    rec_time DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 视频分区维度表
+CREATE TABLE video_category (
+    category_id SMALLINT PRIMARY KEY,
+    category_name VARCHAR(30) NOT NULL,
+    parent_id SMALLINT COMMENT '父分区ID',
+    business_type VARCHAR(20) COMMENT '业务分类'
+);
+
+-- 小时级统计表
+CREATE TABLE hourly_stats (
+    stat_time DATETIME PRIMARY KEY,
+    total_views BIGINT UNSIGNED DEFAULT 0,
+    new_videos INT UNSIGNED DEFAULT 0,
+    active_users INT UNSIGNED DEFAULT 0,
+    category_dist JSON COMMENT '分区流量分布'
+);
+
